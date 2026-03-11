@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planner Calendário Pro</title>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📅</text></svg>">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#6366f1', // Indigo 500 (Mais moderno)
+                        'primary-light': '#e0e7ff', // Indigo 100
+                        'primary-dark': '#4f46e5', // Indigo 600
+                        'secondary': '#10b981', // Emerald 500
+                        'danger': '#f43f5e', // Rose 500
+                        'warning': '#f59e0b', // Amber 500
+                        'surface': '#f8fafc', // Slate 50
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+                        'float': '0 10px 40px -10px rgba(0,0,0,0.08)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        
+        /* Ocultar scrollbar mantendo o scroll */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Animações Suaves */
+        .modal-enter { animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .modal-leave { animation: slideOutRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        .backdrop-enter { animation: fadeIn 0.3s ease-out forwards; }
+        .backdrop-leave { animation: fadeOut 0.2s ease-in forwards; }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOutRight {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        @keyframes fadeIn { from { opacity: 0; backdrop-filter: blur(0px); } to { opacity: 1; backdrop-filter: blur(4px); } }
+        @keyframes fadeOut { from { opacity: 1; backdrop-filter: blur(4px); } to { opacity: 0; backdrop-filter: blur(0px); } }
+
+        /* Ajustes do Grid do Calendário Mensal */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 1px;
+            background-color: #e2e8f0; /* slate-200 */
+            border: 1px solid #e2e8f0;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+        }
+        .calendar-cell {
+            background-color: white;
+            min-height: 120px;
+            padding: 0.75rem;
+            transition: all 0.2s ease;
+        }
+        .calendar-cell:hover { background-color: #f8fafc; cursor: pointer; }
+        .calendar-cell.inactive { background-color: #f8fafc; color: #cbd5e1; }
+        
+        @media (max-width: 640px) {
+            .calendar-cell { min-height: 90px; padding: 0.5rem; }
+        }
+
+        /* Campos de Input Modernos */
+        .input-soft {
+            background-color: #f1f5f9; /* slate-100 */
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .input-soft:focus {
+            background-color: #ffffff;
+            border-color: #818cf8; /* indigo-400 */
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            outline: none;
+        }
+
+        /* Checkbox Customizado */
+        .checkbox-modern {
+            appearance: none;
+            background-color: #f1f5f9;
+            border: 2px solid #cbd5e1;
+            border-radius: 0.375rem;
+            display: inline-block;
+            position: relative;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .checkbox-modern:checked {
+            background-color: #6366f1;
+            border-color: #6366f1;
+        }
+        .checkbox-modern:checked::after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 2px;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased h-[100dvh] flex overflow-hidden bg-surface">
+
+    <!-- Container de Notificações (Toasts) -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-[70] flex flex-col space-y-3"></div>
+
+    <!-- Indicador de Status Cloud -->
+    <div id="loading-overlay" class="fixed inset-0 bg-white/90 backdrop-blur-sm z-[60] flex flex-col items-center justify-center transition-opacity duration-300">
+        <svg class="animate-spin h-12 w-12 text-primary mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+        <p class="font-medium text-slate-600 tracking-wide text-sm">Conectando ao seu Workspace...</p>
+    </div>
+
+    <!-- BARRA LATERAL (SIDEBAR) -->
+    <aside id="sidebar" class="bg-white border-r border-slate-200 flex flex-col transition-all duration-300 ease-in-out w-20 hover:w-64 z-20 shrink-0 group relative shadow-soft">
+        <!-- Logo Area -->
+        <div class="h-16 flex items-center px-5 border-b border-slate-100 overflow-hidden shrink-0">
+            <div class="bg-primary/10 text-primary p-2 rounded-xl shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+            </div>
+            <h1 class="ml-3 text-lg font-bold text-slate-800 tracking-tight whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">Planner Pro</h1>
+        </div>
+
+        <!-- Ferramentas -->
+        <nav class="flex-1 py-6 flex flex-col gap-2 px-3 overflow-hidden">
+            <button onclick="window.goToday()" class="flex items-center px-3 py-3 rounded-xl hover:bg-slate-50 text-slate-600 hover:text-primary transition-all group/btn w-full relative">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+                <span class="ml-4 font-medium text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">Ir para Hoje</span>
+                <!-- Tooltip Mobile -->
+                <span class="absolute left-14 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 group-hover:hidden transition-opacity pointer-events-none">Hoje</span>
+            </button>
+
+            <button onclick="window.goToNextTask()" class="flex items-center px-3 py-3 rounded-xl hover:bg-slate-50 text-slate-600 hover:text-warning transition-all group/btn w-full relative">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                <span class="ml-4 font-medium text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">Próxima Tarefa</span>
+                <span class="absolute left-14 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 group-hover:hidden transition-opacity pointer-events-none whitespace-nowrap">Próxima Tarefa</span>
+            </button>
+
+            <button onclick="window.showNotification('Filtro de Prioridades em breve!', 'info')" class="flex items-center px-3 py-3 rounded-xl hover:bg-slate-50 text-slate-600 hover:text-secondary transition-all group/btn w-full relative">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
+                <span class="ml-4 font-medium text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">Prioridades</span>
+                <span class="absolute left-14 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 group-hover:hidden transition-opacity pointer-events-none">Filtros</span>
+            </button>
+
+            <button onclick="window.showNotification('Visão de Atrasadas em breve!', 'error')" class="flex items-center px-3 py-3 rounded-xl hover:bg-slate-50 text-slate-600 hover:text-danger transition-all group/btn w-full relative">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <span class="ml-4 font-medium text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">Atrasadas</span>
+                <span class="absolute left-14 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 group-hover:hidden transition-opacity pointer-events-none">Atrasadas</span>
+            </button>
+        </nav>
+
+        <!-- Status do Usuário / Nuvem -->
+        <div class="p-4 border-t border-slate-100 overflow-hidden shrink-0 bg-slate-50/50 mt-auto">
+            <div id="cloud-indicator" class="flex items-center px-2 py-2 rounded-lg bg-green-100/50 text-green-700 w-full hidden">
+                <span class="w-2 h-2 rounded-full bg-green-500 mr-3 animate-pulse shrink-0"></span>
+                <span class="text-xs font-semibold tracking-wide whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">Online & Sincronizado</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ÁREA PRINCIPAL -->
+    <div class="flex-1 flex flex-col h-full overflow-hidden relative">
+        
+        <!-- BARRA DE FERRAMENTAS DO CALENDÁRIO (Abas e Navegação) -->
+        <header class="bg-white border-b border-slate-200 px-6 py-4 flex flex-col md:flex-row justify-between items-center z-10 shrink-0 shadow-sm">
+            
+            <!-- Navegação Temporal (< Hoje >) -->
+            <div class="flex items-center space-x-2 md:space-x-4 mb-4 md:mb-0">
+                <button onclick="window.navigateTemporal(-1)" class="p-2.5 rounded-xl hover:bg-slate-100 text-slate-500 hover:text-primary transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                </button>
+                
+                <h2 id="period-label" class="text-xl md:text-2xl font-bold text-slate-800 w-48 md:w-64 text-center">...</h2>
+
+                <button onclick="window.navigateTemporal(1)" class="p-2.5 rounded-xl hover:bg-slate-100 text-slate-500 hover:text-primary transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                </button>
+            </div>
+
+            <!-- Abas (Semana / Mês) -->
+            <div class="flex bg-slate-100 p-1.5 rounded-xl border border-slate-200 shadow-inner">
+                <button onclick="window.switchTab('week')" id="tab-week" class="px-5 py-2 rounded-lg text-sm font-semibold transition-all bg-white text-primary shadow-soft">
+                    Semanal
+                </button>
+                <button onclick="window.switchTab('month')" id="tab-month" class="px-5 py-2 rounded-lg text-sm font-semibold transition-all text-slate-500 hover:text-slate-800">
+                    Mensal
+                </button>
+            </div>
+        </header>
+
+        <!-- CONTEÚDO DO CALENDÁRIO -->
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 no-scrollbar relative">
+            <div class="max-w-7xl mx-auto h-full">
+                <!-- View Semanal -->
+                <div id="view-week" class="h-full flex flex-col sm:grid sm:grid-cols-7 gap-4 lg:gap-6">
+                    <!-- Renderizado via JS -->
+                </div>
+
+                <!-- View Mensal -->
+                <div id="view-month" class="hidden h-full flex flex-col">
+                    <div class="grid grid-cols-7 gap-1 mb-3">
+                        <div class="text-center text-xs font-bold text-slate-400 uppercase tracking-widest py-2">Dom</div>
+                        <div class="text-center text-xs font-bold text-slate-400 uppercase tracking-widest py-2">Seg</div>
+                        <div class="text-center text-xs font-bold text-slate-400 uppercase tracking-widest py-2">Ter</div>
+                        <div class="text-center text-xs font-bold text-slate-400 uppercase tracking-widest py-2">Qua</div>
+                        <div class="text-center text-xs font-bold text-slate-400 uppercase tracking-widest py-2">Qui</div>
+                        <div class="text-center text-xs font-bold text-slate-400 uppercase tracking-widest py-2">Sex</div>
+                        <div class="text-center text-xs font-bold text-slate-400 uppercase tracking-widest py-2">Sáb</div>
+                    </div>
+                    <div id="month-grid" class="calendar-grid flex-1">
+                        <!-- Renderizado via JS -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- PAINEL LATERAL (MODAL DO DIA) -->
+    <div id="daily-modal-backdrop" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[40] hidden backdrop-enter" onclick="window.closeDailyModal()"></div>
+    
+    <!-- Correção Crítica do Modal: Usando flex-col, h-[100dvh] e limitando o corpo com min-h-0 -->
+    <div id="daily-modal" class="fixed top-0 right-0 h-[100dvh] w-full sm:w-[500px] md:w-[600px] bg-white shadow-float z-[50] hidden flex-col modal-enter border-l border-slate-100">
+        
+        <!-- HEADER (FIXO) -->
+        <header class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-white shrink-0">
+            <div>
+                <h3 id="modal-date-title" class="text-2xl font-black text-slate-800 tracking-tight">Dia</h3>
+                <p id="modal-date-subtitle" class="text-sm text-slate-500 font-medium mt-0.5">Detalhes do planejamento</p>
+            </div>
+            <button onclick="window.closeDailyModal()" class="p-2.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </header>
+
+        <!-- BODY (ROláVEL) -->
+        <main class="flex-1 overflow-y-auto p-6 no-scrollbar min-h-0 bg-slate-50/50">
+            <section class="mb-10">
+                <div class="flex items-center mb-5">
+                    <span class="w-1.5 h-6 bg-primary rounded-full mr-3"></span>
+                    <h4 class="text-lg font-bold text-slate-800">Tarefas Principais</h4>
+                </div>
+                <div id="modal-task-list" class="space-y-3"></div>
+            </section>
+            
+            <section class="mb-10">
+                <div class="flex items-center mb-5">
+                    <span class="w-1.5 h-6 bg-secondary rounded-full mr-3"></span>
+                    <h4 class="text-lg font-bold text-slate-800">Desdobramentos</h4>
+                </div>
+                <div id="modal-substep-list" class="space-y-5"></div>
+            </section>
+            
+            <section class="mb-4">
+                <div class="flex items-center mb-4">
+                    <span class="w-1.5 h-6 bg-warning rounded-full mr-3"></span>
+                    <h4 class="text-lg font-bold text-slate-800">Observações</h4>
+                </div>
+                <textarea id="modal-notes" rows="4" placeholder="Aprendizados, reuniões ou notas gerais..." class="w-full p-4 input-soft rounded-xl text-sm text-slate-700 resize-none transition-all"></textarea>
+            </section>
+        </main>
+
+        <!-- FOOTER (FIXO) -->
+        <footer class="p-5 border-t border-slate-100 bg-white flex justify-end space-x-3 shrink-0">
+            <button onclick="window.closeDailyModal()" class="px-5 py-2.5 text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 font-medium transition-all">Cancelar</button>
+            <button onclick="window.saveDayData()" class="px-6 py-2.5 bg-primary text-white rounded-xl hover:bg-primary-dark hover:shadow-lg hover:shadow-indigo-200 font-medium transition-all flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                Salvar Alterações
+            </button>
+        </footer>
+    </div>
+
+
+    <!-- SCRIPT PRINCIPAL E FIREBASE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyALkPXI_H0I4wS9moeKZdDd2el-wGLa3fg",
+            authDomain: "planner-diario-581be.firebaseapp.com",
+            projectId: "planner-diario-581be",
+            storageBucket: "planner-diario-581be.firebasestorage.app",
+            messagingSenderId: "57260131917",
+            appId: "1:57260131917:web:d882d63ed2149234dafe04",
+            measurementId: "G-DPC3KDMVRP"
+        };
+        const appId = "planner-pro-v3";
+        let app, auth, db, analytics, currentUser;
+
+        // --- ESTADO DO APLICATIVO ---
+        let globalPlannerData = {};
+        let baseDate = new Date();
+        baseDate.setHours(0,0,0,0);
+        
+        let currentTab = 'week';
+        let selectedDateKey = null;
+        let activeDailyData = null;
+
+        const dayNamesList = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+        const monthNamesList = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+        const NUM_TASKS = 5;
+
+        // Sistema de Notificações
+        window.showNotification = (message, type = 'info') => {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const bgColor = type === 'error' ? 'bg-danger' : (type === 'success' ? 'bg-secondary' : 'bg-primary-dark');
+            const icon = type === 'error' ? '⚠️' : (type === 'success' ? '✅' : '👋');
+            
+            toast.className = `${bgColor} text-white px-5 py-4 rounded-xl shadow-float flex items-center transition-all duration-300 transform translate-y-full opacity-0 max-w-sm`;
+            toast.innerHTML = `
+                <span class="mr-3 text-lg">${icon}</span>
+                <span class="text-sm font-medium flex-1 leading-relaxed">${message}</span>
+                <button onclick="this.parentElement.remove()" class="ml-4 hover:text-white/70 text-xl font-bold transition-colors">&times;</button>
+            `;
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.classList.remove('translate-y-full', 'opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('translate-y-full', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        };
+
+        // Lógica de "Próxima Tarefa"
+        window.goToNextTask = () => {
+            const todayStr = getFormattedDateKey(new Date());
+            const todayParts = todayStr.split('-');
+            const todayDate = new Date(todayParts[2], todayParts[1]-1, todayParts[0]);
+
+            let nextKey = null;
+            let closestDiff = Infinity;
+
+            for (const key in globalPlannerData) {
+                const data = globalPlannerData[key];
+                const parts = key.split('-');
+                const docDate = new Date(parts[2], parts[1]-1, parts[0]);
+                
+                // Se a data for hoje ou futura
+                if (docDate >= todayDate) {
+                    const hasIncomplete = data.tasks && data.tasks.some(t => t.description.trim() !== '' && !t.completed);
+                    if (hasIncomplete) {
+                        const diff = docDate - todayDate;
+                        if (diff < closestDiff) {
+                            closestDiff = diff;
+                            nextKey = key;
+                        }
+                    }
+                }
+            }
+
+            if (nextKey) {
+                window.openDailyModal(nextKey);
+            } else {
+                window.showNotification("Nenhuma tarefa pendente futura encontrada!", "success");
+            }
+        };
+
+        // Inicialização Firebase
+        app = initializeApp(firebaseConfig);
+        analytics = getAnalytics(app);
+        auth = getAuth(app);
+        db = getFirestore(app);
+        
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                const cloudInd = document.getElementById('cloud-indicator');
+                cloudInd.classList.remove('hidden');
+                cloudInd.classList.replace('bg-red-100/50', 'bg-green-100/50');
+                cloudInd.classList.replace('text-red-700', 'text-green-700');
+                cloudInd.innerHTML = '<span class="w-2 h-2 rounded-full bg-green-500 mr-3 animate-pulse shrink-0"></span><span class="text-xs font-semibold tracking-wide whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">Online</span>';
+                
+                document.getElementById('loading-overlay').classList.add('hidden');
+                fetchDataAndListen();
+            } else {
+                initAuth();
+            }
+        });
+
+        async function initAuth() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    try {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } catch (customTokenError) {
+                        await signInAnonymously(auth);
+                    }
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                document.getElementById('loading-overlay').classList.add('hidden');
+                
+                const cloudInd = document.getElementById('cloud-indicator');
+                cloudInd.classList.remove('hidden');
+                cloudInd.classList.replace('bg-green-100/50', 'bg-red-100/50');
+                cloudInd.classList.replace('text-green-700', 'text-red-700');
+                cloudInd.innerHTML = '<span class="w-2 h-2 rounded-full bg-red-500 mr-3 shrink-0"></span><span class="text-xs font-semibold tracking-wide whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">Offline</span>';
+
+                if (error.code === 'auth/configuration-not-found' || error.code === 'auth/admin-restricted-operation') {
+                    window.showNotification("Ative o 'Login Anônimo' no Firebase para habilitar a nuvem. Usando modo local.", "error");
+                }
+
+                loadLocalData();
+                renderCalendar();
+            }
+        }
+
+        function fetchDataAndListen() {
+            if (!currentUser || !db) return;
+            const q = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'planner_days');
+            
+            onSnapshot(q, (snapshot) => {
+                snapshot.forEach(doc => {
+                    globalPlannerData[doc.id] = doc.data();
+                });
+                renderCalendar();
+            }, (error) => {});
+        }
+
+        function loadLocalData() {
+            try { globalPlannerData = JSON.parse(localStorage.getItem('dailyPlannerHistory') || '{}'); } catch(e) {}
+        }
+
+        function getFormattedDateKey(date) {
+            return `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear()}`;
+        }
+
+        function parseDateKey(key) {
+            const [d, m, y] = key.split('-');
+            return new Date(y, m - 1, d);
+        }
+
+        function getStartOfWeek(date) {
+            const d = new Date(date);
+            const day = d.getDay();
+            const diff = d.getDate() - day;
+            return new Date(d.setDate(diff));
+        }
+
+        window.switchTab = (tab) => {
+            currentTab = tab;
+            const btnWeek = document.getElementById('tab-week');
+            const btnMonth = document.getElementById('tab-month');
+            const viewWeek = document.getElementById('view-week');
+            const viewMonth = document.getElementById('view-month');
+
+            if (tab === 'week') {
+                btnWeek.className = "px-5 py-2 rounded-lg text-sm font-semibold transition-all bg-white text-primary shadow-soft";
+                btnMonth.className = "px-5 py-2 rounded-lg text-sm font-semibold transition-all text-slate-500 hover:text-slate-800";
+                viewWeek.classList.remove('hidden');
+                viewMonth.classList.add('hidden');
+            } else {
+                btnMonth.className = "px-5 py-2 rounded-lg text-sm font-semibold transition-all bg-white text-primary shadow-soft";
+                btnWeek.className = "px-5 py-2 rounded-lg text-sm font-semibold transition-all text-slate-500 hover:text-slate-800";
+                viewMonth.classList.remove('hidden');
+                viewWeek.classList.add('hidden');
+            }
+            renderCalendar();
+        };
+
+        window.navigateTemporal = (direction) => {
+            if (currentTab === 'week') {
+                baseDate.setDate(baseDate.getDate() + (direction * 7));
+            } else {
+                baseDate.setMonth(baseDate.getMonth() + direction);
+            }
+            renderCalendar();
+        };
+
+        window.goToday = () => {
+            baseDate = new Date();
+            baseDate.setHours(0,0,0,0);
+            renderCalendar();
+        };
+
+        function renderCalendar() {
+            if (currentTab === 'week') renderWeekView();
+            else renderMonthView();
+        }
+
+        function getDayMetrics(dateKey) {
+            const data = globalPlannerData[dateKey];
+            if (!data || !data.tasks) return null;
+            
+            const realTasks = data.tasks.filter(t => t && t.description && t.description.trim() !== '');
+            if (realTasks.length === 0) return null;
+
+            const completed = realTasks.filter(t => t.completed).length;
+            return { total: realTasks.length, completed };
+        }
+
+        function renderWeekView() {
+            const startOfWeek = getStartOfWeek(baseDate);
+            const endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(startOfWeek.getDate() + 6);
+            
+            const monthStr = monthNamesList[startOfWeek.getMonth()];
+            const monthEndStr = monthNamesList[endOfWeek.getMonth()];
+            if (startOfWeek.getMonth() === endOfWeek.getMonth()) {
+                document.getElementById('period-label').innerText = `${monthStr} ${startOfWeek.getFullYear()}`;
+            } else {
+                document.getElementById('period-label').innerText = `${monthStr.substring(0,3)} - ${monthEndStr.substring(0,3)} ${endOfWeek.getFullYear()}`;
+            }
+
+            const container = document.getElementById('view-week');
+            container.innerHTML = '';
+            
+            const todayKey = getFormattedDateKey(new Date());
+
+            for (let i = 0; i < 7; i++) {
+                const currentDateLoop = new Date(startOfWeek);
+                currentDateLoop.setDate(startOfWeek.getDate() + i);
+                const dateKey = getFormattedDateKey(currentDateLoop);
+                const isToday = dateKey === todayKey;
+                const metrics = getDayMetrics(dateKey);
+                
+                let columnHTML = `
+                    <div onclick="window.openDailyModal('${dateKey}')" class="flex flex-col bg-white rounded-2xl border ${isToday ? 'border-primary ring-2 ring-primary/20 shadow-lg' : 'border-slate-200 shadow-soft hover:-translate-y-1 hover:shadow-lg'} p-4 sm:p-5 transition-all duration-300 cursor-pointer min-h-[140px] sm:min-h-0 relative group">
+                        ${isToday ? '<div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-sm tracking-wider uppercase">Hoje</div>' : ''}
+                        
+                        <div class="flex justify-between items-center sm:block sm:text-center mb-4 mt-1">
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">${dayNamesList[i].substring(0,3)}</span>
+                            <span class="text-3xl font-black ${isToday ? 'text-primary' : 'text-slate-700'} sm:block sm:mt-1">${currentDateLoop.getDate()}</span>
+                        </div>
+                        <div class="flex-1 space-y-2">
+                `;
+
+                if (metrics) {
+                    const progress = Math.round((metrics.completed / metrics.total) * 100);
+                    const color = metrics.completed === metrics.total ? 'bg-secondary' : 'bg-primary';
+                    columnHTML += `
+                        <div class="w-full bg-slate-100 rounded-full h-1.5 mb-3 overflow-hidden">
+                            <div class="${color} h-full rounded-full transition-all duration-500" style="width: ${progress}%"></div>
+                        </div>
+                        <p class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider mb-2">${metrics.completed} de ${metrics.total} Tarefas</p>
+                    `;
+                    
+                    const tasks = globalPlannerData[dateKey].tasks.filter(t => t && t.description).slice(0, 3);
+                    tasks.forEach(t => {
+                        columnHTML += `
+                            <div class="text-xs truncate ${t.completed ? 'line-through text-slate-400' : 'text-slate-600 font-medium'} flex items-center">
+                                <span class="mr-1.5 ${t.completed ? 'text-secondary' : 'text-slate-300'}">${t.completed ? '✓' : '•'}</span> ${t.description}
+                            </div>
+                        `;
+                    });
+                    if (metrics.total > 3) columnHTML += `<div class="text-[10px] text-slate-400 pl-3 pt-1 font-medium">+${metrics.total - 3} ocultas</div>`;
+                } else {
+                    columnHTML += `
+                        <div class="h-full flex items-center justify-center text-slate-200 group-hover:text-primary-light transition-colors duration-300">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4" /></svg>
+                        </div>
+                    `;
+                }
+
+                columnHTML += `</div></div>`;
+                container.insertAdjacentHTML('beforeend', columnHTML);
+            }
+        }
+
+        function renderMonthView() {
+            const year = baseDate.getFullYear();
+            const month = baseDate.getMonth();
+            
+            document.getElementById('period-label').innerText = `${monthNamesList[month]} ${year}`;
+            
+            const firstDayOfMonth = new Date(year, month, 1);
+            const lastDayOfMonth = new Date(year, month + 1, 0);
+            
+            const startingDayIndex = firstDayOfMonth.getDay();
+            const totalDays = lastDayOfMonth.getDate();
+            
+            const grid = document.getElementById('month-grid');
+            grid.innerHTML = '';
+            
+            const todayKey = getFormattedDateKey(new Date());
+
+            for (let i = 0; i < startingDayIndex; i++) {
+                grid.insertAdjacentHTML('beforeend', `<div class="calendar-cell inactive"></div>`);
+            }
+
+            for (let i = 1; i <= totalDays; i++) {
+                const currentDateLoop = new Date(year, month, i);
+                const dateKey = getFormattedDateKey(currentDateLoop);
+                const isToday = dateKey === todayKey;
+                const metrics = getDayMetrics(dateKey);
+                
+                let cellHTML = `
+                    <div onclick="window.openDailyModal('${dateKey}')" class="calendar-cell relative flex flex-col ${isToday ? 'bg-primary-light/30' : ''}">
+                        <div class="text-right">
+                            <span class="inline-flex items-center justify-center w-7 h-7 text-sm font-bold rounded-full ${isToday ? 'bg-primary text-white shadow-md shadow-indigo-200' : 'text-slate-600'}">
+                                ${i}
+                            </span>
+                        </div>
+                        <div class="mt-auto pt-2 flex flex-wrap gap-1.5 justify-end">
+                `;
+
+                if (metrics) {
+                    if (metrics.completed === metrics.total) cellHTML += `<span class="w-2.5 h-2.5 rounded-full bg-secondary shadow-sm shadow-emerald-200" title="Completo"></span>`;
+                    else if (metrics.completed > 0) cellHTML += `<span class="w-2.5 h-2.5 rounded-full bg-primary shadow-sm shadow-indigo-200" title="Em progresso"></span>`;
+                    else cellHTML += `<span class="w-2.5 h-2.5 rounded-full bg-danger shadow-sm shadow-rose-200" title="Pendente"></span>`;
+                }
+
+                cellHTML += `</div></div>`;
+                grid.insertAdjacentHTML('beforeend', cellHTML);
+            }
+
+            const remainingCells = 42 - (startingDayIndex + totalDays);
+            if(remainingCells < 14) {
+                for (let i = 0; i < remainingCells; i++) {
+                    grid.insertAdjacentHTML('beforeend', `<div class="calendar-cell inactive"></div>`);
+                }
+            }
+        }
+
+        function createEmptyDailyData() {
+            return {
+                tasks: Array(NUM_TASKS).fill(null).map((_, i) => ({ id: i + 1, description: '', completed: false, priority: 'medium', substeps: ['', '', '', ''] })),
+                notes: ''
+            };
+        }
+
+        window.openDailyModal = (dateKey) => {
+            selectedDateKey = dateKey;
+            
+            const existingData = globalPlannerData[dateKey];
+            if (existingData) activeDailyData = JSON.parse(JSON.stringify(existingData));
+            else activeDailyData = createEmptyDailyData();
+
+            if(!activeDailyData.tasks || activeDailyData.tasks.length < NUM_TASKS) {
+                const em = createEmptyDailyData();
+                activeDailyData.tasks = [...(activeDailyData.tasks||[]), ...em.tasks].slice(0, NUM_TASKS);
+            }
+
+            const dateObj = parseDateKey(dateKey);
+            document.getElementById('modal-date-title').innerText = `${dateObj.getDate()} de ${monthNamesList[dateObj.getMonth()]}`;
+            document.getElementById('modal-date-subtitle').innerText = `${dayNamesList[dateObj.getDay()]} - ${dateObj.getFullYear()}`;
+
+            renderModalContent();
+
+            const backdrop = document.getElementById('daily-modal-backdrop');
+            const modal = document.getElementById('daily-modal');
+            backdrop.classList.remove('hidden', 'backdrop-leave');
+            backdrop.classList.add('backdrop-enter');
+            modal.classList.remove('hidden', 'modal-leave');
+            modal.classList.add('modal-enter');
+        };
+
+        window.closeDailyModal = () => {
+            const backdrop = document.getElementById('daily-modal-backdrop');
+            const modal = document.getElementById('daily-modal');
+            
+            backdrop.classList.remove('backdrop-enter');
+            backdrop.classList.add('backdrop-leave');
+            modal.classList.remove('modal-enter');
+            modal.classList.add('modal-leave');
+            
+            setTimeout(() => {
+                backdrop.classList.add('hidden');
+                modal.classList.add('hidden');
+                activeDailyData = null;
+                selectedDateKey = null;
+            }, 300);
+        };
+
+        function renderModalContent() {
+            const tList = document.getElementById('modal-task-list');
+            const sList = document.getElementById('modal-substep-list');
+            
+            tList.innerHTML = '';
+            sList.innerHTML = '';
+
+            activeDailyData.tasks.forEach((task, index) => {
+                tList.insertAdjacentHTML('beforeend', `
+                    <div class="flex items-center space-x-2 sm:space-x-3 bg-white border border-slate-200 p-2.5 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                        <input type="checkbox" onchange="updateTempData('completed', ${index}, this.checked)" ${task.completed ? 'checked' : ''} class="w-5 h-5 checkbox-modern shrink-0">
+                        <input type="text" oninput="updateTempData('description', ${index}, this.value)" value="${task.description}" placeholder="Descreva a tarefa..." class="flex-1 input-soft py-1.5 px-3 rounded-lg text-sm ${task.completed ? 'line-through text-slate-400 bg-slate-50 border-transparent' : 'text-slate-800'} min-w-0 font-medium">
+                        
+                        <div class="relative shrink-0 flex items-center bg-slate-100 rounded-lg p-1">
+                             <select onchange="updateTempData('priority', ${index}, this.value)" class="text-xs font-semibold border-none bg-transparent rounded px-2 py-1 outline-none cursor-pointer text-slate-600 appearance-none text-center">
+                                <option value="high" ${task.priority==='high'?'selected':''}>Alta</option>
+                                <option value="medium" ${task.priority==='medium'?'selected':''}>Média</option>
+                                <option value="low" ${task.priority==='low'?'selected':''}>Baixa</option>
+                            </select>
+                        </div>
+
+                        <button onclick="window.exportToICS(${index})" class="p-2 text-primary bg-primary-light/50 hover:bg-primary hover:text-white rounded-lg transition-colors shrink-0" title="Adicionar ao Calendário (.ics)">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        </button>
+                    </div>
+                `);
+
+                if (task.description.trim() !== '') {
+                    if(!task.substeps) task.substeps = ['','','',''];
+                    sList.insertAdjacentHTML('beforeend', `
+                        <div class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative overflow-hidden group/card">
+                            <div class="absolute top-0 left-0 w-1 h-full bg-slate-200 group-hover/card:bg-primary transition-colors"></div>
+                            <p class="text-xs font-bold text-primary mb-3 pl-2">Desdobrando: ${task.description}</p>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pl-2">
+                                <input type="text" oninput="updateTempSub(${index}, 0, this.value)" value="${task.substeps[0]||''}" placeholder="Passo A" class="w-full text-sm p-2.5 input-soft rounded-lg">
+                                <input type="text" oninput="updateTempSub(${index}, 1, this.value)" value="${task.substeps[1]||''}" placeholder="Passo B" class="w-full text-sm p-2.5 input-soft rounded-lg">
+                                <input type="text" oninput="updateTempSub(${index}, 2, this.value)" value="${task.substeps[2]||''}" placeholder="Passo C" class="w-full text-sm p-2.5 input-soft rounded-lg">
+                                <div class="relative w-full">
+                                    <input type="date" onchange="updateTempSub(${index}, 3, this.value)" value="${task.substeps[3]||''}" class="w-full text-sm p-2.5 input-soft rounded-lg text-slate-600 appearance-none bg-slate-100">
+                                </div>
+                            </div>
+                        </div>
+                    `);
+                }
+            });
+
+            const notesField = document.getElementById('modal-notes');
+            notesField.value = activeDailyData.notes || '';
+            notesField.oninput = (e) => { activeDailyData.notes = e.target.value; };
+        }
+
+        window.updateTempData = (field, taskIndex, value) => {
+            if(!activeDailyData) return;
+            activeDailyData.tasks[taskIndex][field] = value;
+            
+            if(field === 'description') {
+                clearTimeout(window.renderTimeout);
+                window.renderTimeout = setTimeout(() => {
+                    const sList = document.getElementById('modal-substep-list');
+                    sList.innerHTML = '';
+                    activeDailyData.tasks.forEach((t, i) => {
+                        if (t.description.trim() !== '') {
+                            if(!t.substeps) t.substeps = ['','','',''];
+                            sList.insertAdjacentHTML('beforeend', `
+                                <div class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative overflow-hidden group/card">
+                                    <div class="absolute top-0 left-0 w-1 h-full bg-slate-200 group-hover/card:bg-primary transition-colors"></div>
+                                    <p class="text-xs font-bold text-primary mb-3 pl-2">Desdobrando: ${t.description}</p>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pl-2">
+                                        <input type="text" oninput="updateTempSub(${i}, 0, this.value)" value="${t.substeps[0]||''}" placeholder="Passo A" class="w-full text-sm p-2.5 input-soft rounded-lg">
+                                        <input type="text" oninput="updateTempSub(${i}, 1, this.value)" value="${t.substeps[1]||''}" placeholder="Passo B" class="w-full text-sm p-2.5 input-soft rounded-lg">
+                                        <input type="text" oninput="updateTempSub(${i}, 2, this.value)" value="${t.substeps[2]||''}" placeholder="Passo C" class="w-full text-sm p-2.5 input-soft rounded-lg">
+                                        <div class="relative w-full">
+                                            <input type="date" onchange="updateTempSub(${i}, 3, this.value)" value="${t.substeps[3]||''}" class="w-full text-sm p-2.5 input-soft rounded-lg text-slate-600 appearance-none bg-slate-100">
+                                        </div>
+                                    </div>
+                                </div>
+                            `);
+                        }
+                    });
+                }, 1000);
+            } else if (field === 'completed') {
+                renderModalContent(); 
+            }
+        };
+
+        window.updateTempSub = (taskIndex, subIndex, value) => {
+            if(!activeDailyData) return;
+            activeDailyData.tasks[taskIndex].substeps[subIndex] = value;
+        };
+
+        window.exportToICS = (taskIndex) => {
+            if(!activeDailyData || !activeDailyData.tasks[taskIndex]) return;
+
+            const task = activeDailyData.tasks[taskIndex];
+            
+            if(!task.description || task.description.trim() === '') {
+                window.showNotification("Preencha a descrição da tarefa para exportá-la.", "warning");
+                return;
+            }
+
+            let year, month, day;
+            const targetDate = task.substeps && task.substeps[3] ? task.substeps[3] : null;
+            
+            if (targetDate) {
+                [year, month, day] = targetDate.split('-');
+            } else {
+                [day, month, year] = selectedDateKey.split('-');
+            }
+
+            const icsDateStart = `${year}${month}${day}`;
+            
+            const dateObj = new Date(year, month - 1, day);
+            dateObj.setDate(dateObj.getDate() + 1);
+            const endYear = dateObj.getFullYear();
+            const endMonth = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const endDay = String(dateObj.getDate()).padStart(2, '0');
+            const icsDateEnd = `${endYear}${endMonth}${endDay}`;
+
+            let desc = `Tarefa: ${task.description}\\n`;
+            if (task.substeps) {
+                if (task.substeps[0]) desc += `Passo A: ${task.substeps[0]}\\n`;
+                if (task.substeps[1]) desc += `Passo B: ${task.substeps[1]}\\n`;
+                if (task.substeps[2]) desc += `Passo C: ${task.substeps[2]}\\n`;
+            }
+            if (activeDailyData.notes && activeDailyData.notes.trim() !== '') {
+                desc += `\\nObservações:\\n${activeDailyData.notes.replace(/\n/g, '\\n')}`;
+            }
+
+            const icsContent = [
+                "BEGIN:VCALENDAR",
+                "VERSION:2.0",
+                "PRODID:-//Planner Pro//BR",
+                "CALSCALE:GREGORIAN",
+                "BEGIN:VEVENT",
+                `DTSTART;VALUE=DATE:${icsDateStart}`,
+                `DTEND;VALUE=DATE:${icsDateEnd}`,
+                `SUMMARY:${task.description}`,
+                `DESCRIPTION:${desc}`,
+                "END:VEVENT",
+                "END:VCALENDAR"
+            ].join("\n");
+
+            const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.setAttribute('download', `Tarefa_${task.description.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.ics`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            window.showNotification("Arquivo .ics gerado! Abra-o para adicionar ao calendário.", "success");
+        };
+
+        window.saveDayData = async () => {
+            if (!selectedDateKey || !activeDailyData) return;
+            
+            const btn = document.querySelector('#daily-modal footer button.bg-primary');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<svg class="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Salvando...';
+
+            try {
+                globalPlannerData[selectedDateKey] = JSON.parse(JSON.stringify(activeDailyData));
+
+                if (currentUser && db) {
+                    const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'planner_days', selectedDateKey);
+                    await setDoc(docRef, activeDailyData);
+                }
+
+                localStorage.setItem('dailyPlannerHistory', JSON.stringify(globalPlannerData));
+                
+                await processFutureReminders(activeDailyData);
+
+                window.closeDailyModal();
+                renderCalendar(); 
+            } catch (error) {
+                console.error("Erro ao salvar", error);
+                window.showNotification("Erro ao salvar as informações.", "error");
+            } finally {
+                btn.innerHTML = originalText;
+            }
+        };
+
+        async function processFutureReminders(dayData) {
+            if (!currentUser || !db) return;
+
+            for (const task of dayData.tasks) {
+                const targetDate = task.substeps && task.substeps[3] ? task.substeps[3] : null;
+                if (targetDate && task.description.trim() !== '') {
+                    const parts = targetDate.split('-');
+                    if(parts.length === 3) {
+                        const targetKey = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                        if(targetKey !== selectedDateKey) {
+                            try {
+                                const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'planner_days', targetKey);
+                                let futureData = globalPlannerData[targetKey] || createEmptyDailyData();
+                                
+                                const reminderDesc = `(Lembrete) ${task.description}`;
+                                const exists = futureData.tasks.some(t => t.description === reminderDesc);
+                                
+                                if (!exists) {
+                                    const emptyIndex = futureData.tasks.findIndex(t => t.description.trim() === '');
+                                    const newTask = { id: Date.now(), description: reminderDesc, completed: false, priority: task.priority, substeps: ['', '', '', targetDate] };
+                                    
+                                    if (emptyIndex !== -1) futureData.tasks[emptyIndex] = newTask;
+                                    else { futureData.tasks.unshift(newTask); futureData.tasks.pop(); }
+                                    
+                                    await setDoc(docRef, futureData);
+                                }
+                            } catch(e) { console.error("Erro ao agendar", e); }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
