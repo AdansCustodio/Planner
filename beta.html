@@ -14,170 +14,197 @@
             theme: {
                 extend: {
                     colors: {
-                        'primary': '#6366f1', // Indigo 500 (Mais moderno)
-                        'primary-light': '#e0e7ff', // Indigo 100
-                        'primary-dark': '#4f46e5', // Indigo 600
-                        'secondary': '#10b981', // Emerald 500
-                        'danger': '#f43f5e', // Rose 500
-                        'warning': '#f59e0b', // Amber 500
-                        'surface': '#f8fafc', // Slate 50
+                        'primary': '#6366f1', 
+                        'primary-light': '#e0e7ff',
+                        'primary-dark': '#4f46e5',
+                        'secondary': '#10b981', 
+                        'danger': '#f43f5e', 
+                        'warning': '#f59e0b',
                     },
                     fontFamily: {
                         sans: ['Inter', 'system-ui', 'sans-serif'],
-                    },
-                    boxShadow: {
-                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
-                        'float': '0 10px 40px -10px rgba(0,0,0,0.08)',
                     }
                 }
             }
         }
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
         
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        /* TEXTURA DE AÇO ESCOVADO (BACKGROUND) */
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #9ca3af;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(255,255,255,0.15) 0%, transparent 60%),
+                repeating-linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.03) 1%, transparent 2%, rgba(0,0,0,0.03) 3%, transparent 4%),
+                linear-gradient(180deg, #9ca3af 0%, #cbd5e1 50%, #9ca3af 100%);
+            background-attachment: fixed;
+        }
         
-        /* Ocultar scrollbar mantendo o scroll */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* Animações Suaves */
-        .modal-enter { animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .modal-leave { animation: slideOutRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        /* BARRAS METÁLICAS ESCURAS 3D */
+        .bar-3d-dark {
+            background: linear-gradient(180deg, #334155 0%, #0f172a 100%);
+            border-top: 1px solid #64748b; /* Iluminação no topo */
+            border-bottom: 1px solid #020617; /* Sombra na base */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+            color: #f8fafc;
+        }
+
+        /* BOTÕES FÍSICOS 3D */
+        .btn-3d {
+            background: linear-gradient(180deg, #475569 0%, #1e293b 100%);
+            border: 1px solid #0f172a;
+            border-top-color: #64748b;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
+            color: white;
+            text-shadow: 0 -1px 1px rgba(0,0,0,0.8);
+            transition: all 0.1s;
+        }
+        .btn-3d:active {
+            background: linear-gradient(180deg, #1e293b 0%, #334155 100%);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.6);
+            border-top-color: #0f172a;
+            transform: translateY(1px);
+        }
+
+        .btn-primary-3d {
+            background: linear-gradient(180deg, #6366f1 0%, #3730a3 100%);
+            border: 1px solid #1e1b4b;
+            border-top-color: #818cf8;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.25);
+            color: white;
+            text-shadow: 0 -1px 1px rgba(0,0,0,0.6);
+        }
+        .btn-primary-3d:active {
+            background: linear-gradient(180deg, #3730a3 0%, #6366f1 100%);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.6);
+            transform: translateY(1px);
+        }
+
+        /* TRILHA INSET 3D (Para as abas) */
+        .inset-track-3d {
+            background: #0f172a;
+            border-bottom: 1px solid #475569;
+            box-shadow: inset 0 3px 6px rgba(0,0,0,0.6);
+        }
+
+        /* CARDS CLAROS SOBRE METAL */
+        .card-light-3d {
+            background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+            border: 1px solid #cbd5e1;
+            border-top: 1px solid #ffffff;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1), inset 0 -2px 5px rgba(0,0,0,0.02);
+        }
+        .card-light-3d:hover {
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15), inset 0 -2px 5px rgba(0,0,0,0.02);
+            transform: translateY(-2px);
+        }
+
+        /* Animações Suaves Modal */
+        .modal-enter { animation: slideInRight 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+        .modal-leave { animation: slideOutRight 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
         .backdrop-enter { animation: fadeIn 0.3s ease-out forwards; }
         .backdrop-leave { animation: fadeOut 0.2s ease-in forwards; }
 
-        @keyframes slideInRight {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        @keyframes slideOutRight {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
-        }
-        @keyframes fadeIn { from { opacity: 0; backdrop-filter: blur(0px); } to { opacity: 1; backdrop-filter: blur(4px); } }
-        @keyframes fadeOut { from { opacity: 1; backdrop-filter: blur(4px); } to { opacity: 0; backdrop-filter: blur(0px); } }
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes slideOutRight { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+        @keyframes fadeIn { from { opacity: 0; backdrop-filter: blur(0px); } to { opacity: 1; backdrop-filter: blur(5px); } }
+        @keyframes fadeOut { from { opacity: 1; backdrop-filter: blur(5px); } to { opacity: 0; backdrop-filter: blur(0px); } }
 
         /* Ajustes do Grid do Calendário Mensal */
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, minmax(0, 1fr));
-            gap: 1px;
-            background-color: #e2e8f0; /* slate-200 */
-            border: 1px solid #e2e8f0;
-            border-radius: 1rem;
+            gap: 2px;
+            background-color: #64748b; /* Bordas escuras do grid */
+            border: 2px solid #64748b;
+            border-radius: 0.75rem;
             overflow: hidden;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
         }
         .calendar-cell {
-            background-color: white;
-            min-height: 120px;
-            padding: 0.75rem;
+            background-color: #f8fafc;
+            min-height: 110px;
+            padding: 0.5rem;
             transition: all 0.2s ease;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.8);
         }
-        .calendar-cell:hover { background-color: #f8fafc; cursor: pointer; }
-        .calendar-cell.inactive { background-color: #f8fafc; color: #cbd5e1; }
+        .calendar-cell:hover { background-color: #ffffff; cursor: pointer; }
+        .calendar-cell.inactive { background-color: #e2e8f0; color: #94a3b8; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
         
-        @media (max-width: 640px) {
-            .calendar-cell { min-height: 90px; padding: 0.5rem; }
-        }
+        @media (max-width: 640px) { .calendar-cell { min-height: 80px; padding: 0.25rem; } }
 
-        /* Campos de Input Modernos */
+        /* Campos de Input Modernos no Modal */
         .input-soft {
-            background-color: #f1f5f9; /* slate-100 */
-            border: 1px solid transparent;
+            background-color: #e2e8f0;
+            border: 1px solid #cbd5e1;
+            border-top-color: #94a3b8; /* Fundo interno escurecido em cima */
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
             transition: all 0.2s ease;
         }
         .input-soft:focus {
             background-color: #ffffff;
-            border-color: #818cf8; /* indigo-400 */
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            border-color: #6366f1;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2), inset 0 1px 2px rgba(0,0,0,0.05);
             outline: none;
         }
-
-        /* Checkbox Customizado */
-        .checkbox-modern {
-            appearance: none;
-            background-color: #f1f5f9;
-            border: 2px solid #cbd5e1;
-            border-radius: 0.375rem;
-            display: inline-block;
-            position: relative;
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-        .checkbox-modern:checked {
-            background-color: #6366f1;
-            border-color: #6366f1;
-        }
-        .checkbox-modern:checked::after {
-            content: '';
-            position: absolute;
-            left: 5px;
-            top: 2px;
-            width: 5px;
-            height: 10px;
-            border: solid white;
-            border-width: 0 2px 2px 0;
-            transform: rotate(45deg);
-        }
+        
+        /* Oculta views via CSS estrito */
+        .view-hidden { display: none !important; }
     </style>
 </head>
-<body class="text-slate-800 antialiased h-[100dvh] flex overflow-hidden bg-surface">
+<body class="text-slate-800 antialiased h-[100dvh] flex overflow-hidden">
 
     <!-- Container de Notificações (Toasts) -->
-    <div id="toast-container" class="fixed bottom-6 right-6 z-[70] flex flex-col space-y-3"></div>
+    <div id="toast-container" class="fixed bottom-6 right-6 z-[70] flex flex-col space-y-3 pointer-events-none"></div>
 
     <!-- Indicador de Status Cloud -->
-    <div id="loading-overlay" class="fixed inset-0 bg-white/90 backdrop-blur-sm z-[60] flex flex-col items-center justify-center transition-opacity duration-300">
+    <div id="loading-overlay" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[60] flex flex-col items-center justify-center transition-opacity duration-300">
         <svg class="animate-spin h-12 w-12 text-primary mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-        <p class="font-medium text-slate-600 tracking-wide text-sm">Conectando ao seu Workspace...</p>
+        <p class="font-medium text-slate-300 tracking-wide text-sm shadow-black drop-shadow-md">Conectando ao Workspace...</p>
     </div>
 
     <!-- BARRA LATERAL (SIDEBAR) -->
-    <aside id="sidebar" class="bg-white border-r border-slate-200 flex flex-col transition-all duration-300 ease-in-out w-20 hover:w-64 z-20 shrink-0 group relative shadow-soft">
+    <aside id="sidebar" class="bar-3d-dark flex flex-col transition-all duration-300 ease-in-out w-20 hover:w-64 z-20 shrink-0 group relative">
         <!-- Logo Area -->
-        <div class="h-16 flex items-center px-5 border-b border-slate-100 overflow-hidden shrink-0">
-            <div class="bg-primary/10 text-primary p-2 rounded-xl shrink-0">
+        <div class="h-16 flex items-center px-5 border-b border-black/50 shadow-sm overflow-hidden shrink-0">
+            <div class="bg-gradient-to-br from-indigo-500 to-indigo-700 text-white p-2 rounded-lg shrink-0 shadow-inner border border-indigo-400">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
             </div>
-            <h1 class="ml-3 text-lg font-bold text-slate-800 tracking-tight whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">Planner Pro</h1>
+            <h1 class="ml-3 text-lg font-black text-white tracking-wider whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 drop-shadow-md">PLANNER PRO</h1>
         </div>
 
         <!-- Ferramentas -->
-        <nav class="flex-1 py-6 flex flex-col gap-2 px-3 overflow-hidden">
-            <button onclick="window.goToday()" class="flex items-center px-3 py-3 rounded-xl hover:bg-slate-50 text-slate-600 hover:text-primary transition-all group/btn w-full relative">
+        <nav class="flex-1 py-6 flex flex-col gap-3 px-3 overflow-hidden">
+            <button onclick="window.goToday()" class="flex items-center px-3 py-3 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all group/btn w-full relative">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
-                <span class="ml-4 font-medium text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">Ir para Hoje</span>
+                <span class="ml-4 font-semibold text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">Ir para Hoje</span>
                 <!-- Tooltip Mobile -->
-                <span class="absolute left-14 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 group-hover:hidden transition-opacity pointer-events-none">Hoje</span>
+                <span class="absolute left-14 bg-black border border-slate-700 text-white text-xs px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 group-hover:hidden transition-opacity pointer-events-none shadow-lg">Hoje</span>
             </button>
 
-            <button onclick="window.goToNextTask()" class="flex items-center px-3 py-3 rounded-xl hover:bg-slate-50 text-slate-600 hover:text-warning transition-all group/btn w-full relative">
+            <button onclick="window.goToNextTask()" class="flex items-center px-3 py-3 rounded-lg text-slate-300 hover:text-warning hover:bg-slate-700/50 transition-all group/btn w-full relative">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                <span class="ml-4 font-medium text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">Próxima Tarefa</span>
-                <span class="absolute left-14 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 group-hover:hidden transition-opacity pointer-events-none whitespace-nowrap">Próxima Tarefa</span>
+                <span class="ml-4 font-semibold text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">Próxima Tarefa</span>
+                <span class="absolute left-14 bg-black border border-slate-700 text-white text-xs px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 group-hover:hidden transition-opacity pointer-events-none whitespace-nowrap shadow-lg">Próxima Tarefa</span>
             </button>
 
-            <button onclick="window.showNotification('Filtro de Prioridades em breve!', 'info')" class="flex items-center px-3 py-3 rounded-xl hover:bg-slate-50 text-slate-600 hover:text-secondary transition-all group/btn w-full relative">
+            <button onclick="window.showNotification('Filtro de Prioridades em breve!', 'info')" class="flex items-center px-3 py-3 rounded-lg text-slate-300 hover:text-secondary hover:bg-slate-700/50 transition-all group/btn w-full relative">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
-                <span class="ml-4 font-medium text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">Prioridades</span>
-                <span class="absolute left-14 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 group-hover:hidden transition-opacity pointer-events-none">Filtros</span>
-            </button>
-
-            <button onclick="window.showNotification('Visão de Atrasadas em breve!', 'error')" class="flex items-center px-3 py-3 rounded-xl hover:bg-slate-50 text-slate-600 hover:text-danger transition-all group/btn w-full relative">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                <span class="ml-4 font-medium text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">Atrasadas</span>
-                <span class="absolute left-14 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 group-hover:hidden transition-opacity pointer-events-none">Atrasadas</span>
+                <span class="ml-4 font-semibold text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">Prioridades</span>
+                <span class="absolute left-14 bg-black border border-slate-700 text-white text-xs px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 group-hover:hidden transition-opacity pointer-events-none shadow-lg">Filtros</span>
             </button>
         </nav>
 
         <!-- Status do Usuário / Nuvem -->
-        <div class="p-4 border-t border-slate-100 overflow-hidden shrink-0 bg-slate-50/50 mt-auto">
-            <div id="cloud-indicator" class="flex items-center px-2 py-2 rounded-lg bg-green-100/50 text-green-700 w-full hidden">
-                <span class="w-2 h-2 rounded-full bg-green-500 mr-3 animate-pulse shrink-0"></span>
-                <span class="text-xs font-semibold tracking-wide whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">Online & Sincronizado</span>
+        <div class="p-4 border-t border-black/50 overflow-hidden shrink-0 bg-slate-900/50 mt-auto">
+            <div id="cloud-indicator" class="flex items-center px-2 py-2 rounded border border-green-800 bg-green-900/30 text-green-400 w-full hidden shadow-inner">
+                <span class="w-2 h-2 rounded-full bg-green-400 mr-3 animate-pulse shrink-0 shadow-[0_0_5px_#4ade80]"></span>
+                <span class="text-[11px] font-bold tracking-wider uppercase whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">Sincronizado</span>
             </div>
         </div>
     </aside>
@@ -186,27 +213,29 @@
     <div class="flex-1 flex flex-col h-full overflow-hidden relative">
         
         <!-- BARRA DE FERRAMENTAS DO CALENDÁRIO (Abas e Navegação) -->
-        <header class="bg-white border-b border-slate-200 px-6 py-4 flex flex-col md:flex-row justify-between items-center z-10 shrink-0 shadow-sm">
+        <header class="bar-3d-dark px-6 py-4 flex flex-col md:flex-row justify-between items-center z-10 shrink-0">
             
             <!-- Navegação Temporal (< Hoje >) -->
             <div class="flex items-center space-x-2 md:space-x-4 mb-4 md:mb-0">
-                <button onclick="window.navigateTemporal(-1)" class="p-2.5 rounded-xl hover:bg-slate-100 text-slate-500 hover:text-primary transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                <button onclick="window.navigateTemporal(-1)" class="p-2 btn-3d rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" /></svg>
                 </button>
                 
-                <h2 id="period-label" class="text-xl md:text-2xl font-bold text-slate-800 w-48 md:w-64 text-center">...</h2>
+                <div class="inset-track-3d px-6 py-1.5 rounded-lg flex items-center justify-center min-w-[200px]">
+                    <h2 id="period-label" class="text-xl md:text-2xl font-black text-white tracking-widest drop-shadow-md">...</h2>
+                </div>
 
-                <button onclick="window.navigateTemporal(1)" class="p-2.5 rounded-xl hover:bg-slate-100 text-slate-500 hover:text-primary transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                <button onclick="window.navigateTemporal(1)" class="p-2 btn-3d rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" /></svg>
                 </button>
             </div>
 
             <!-- Abas (Semana / Mês) -->
-            <div class="flex bg-slate-100 p-1.5 rounded-xl border border-slate-200 shadow-inner">
-                <button onclick="window.switchTab('week')" id="tab-week" class="px-5 py-2 rounded-lg text-sm font-semibold transition-all bg-white text-primary shadow-soft">
+            <div class="flex inset-track-3d p-1.5 rounded-xl border border-slate-700/50">
+                <button onclick="window.switchTab('week')" id="tab-week" class="px-6 py-1.5 rounded-lg text-sm font-bold uppercase tracking-wider transition-all btn-3d text-white">
                     Semanal
                 </button>
-                <button onclick="window.switchTab('month')" id="tab-month" class="px-5 py-2 rounded-lg text-sm font-semibold transition-all text-slate-500 hover:text-slate-800">
+                <button onclick="window.switchTab('month')" id="tab-month" class="px-6 py-1.5 rounded-lg text-sm font-bold uppercase tracking-wider transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
                     Mensal
                 </button>
             </div>
@@ -215,21 +244,21 @@
         <!-- CONTEÚDO DO CALENDÁRIO -->
         <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 no-scrollbar relative">
             <div class="max-w-7xl mx-auto h-full">
-                <!-- View Semanal -->
-                <div id="view-week" class="h-full flex flex-col sm:grid sm:grid-cols-7 gap-4 lg:gap-6">
+                <!-- View Semanal (Utiliza ID para CSS toggle) -->
+                <div id="view-week" class="h-full flex flex-col sm:grid sm:grid-cols-7 gap-4 lg:gap-5 transition-opacity duration-300">
                     <!-- Renderizado via JS -->
                 </div>
 
                 <!-- View Mensal -->
-                <div id="view-month" class="hidden h-full flex flex-col">
-                    <div class="grid grid-cols-7 gap-1 mb-3">
-                        <div class="text-center text-xs font-bold text-slate-400 uppercase tracking-widest py-2">Dom</div>
-                        <div class="text-center text-xs font-bold text-slate-400 uppercase tracking-widest py-2">Seg</div>
-                        <div class="text-center text-xs font-bold text-slate-400 uppercase tracking-widest py-2">Ter</div>
-                        <div class="text-center text-xs font-bold text-slate-400 uppercase tracking-widest py-2">Qua</div>
-                        <div class="text-center text-xs font-bold text-slate-400 uppercase tracking-widest py-2">Qui</div>
-                        <div class="text-center text-xs font-bold text-slate-400 uppercase tracking-widest py-2">Sex</div>
-                        <div class="text-center text-xs font-bold text-slate-400 uppercase tracking-widest py-2">Sáb</div>
+                <div id="view-month" class="view-hidden h-full flex-col transition-opacity duration-300">
+                    <div class="grid grid-cols-7 gap-1 mb-2 bg-slate-800/80 rounded-t-lg border border-slate-700 backdrop-blur-sm shadow-md">
+                        <div class="text-center text-[10px] font-black text-slate-300 uppercase tracking-widest py-2">Dom</div>
+                        <div class="text-center text-[10px] font-black text-slate-300 uppercase tracking-widest py-2">Seg</div>
+                        <div class="text-center text-[10px] font-black text-slate-300 uppercase tracking-widest py-2">Ter</div>
+                        <div class="text-center text-[10px] font-black text-slate-300 uppercase tracking-widest py-2">Qua</div>
+                        <div class="text-center text-[10px] font-black text-slate-300 uppercase tracking-widest py-2">Qui</div>
+                        <div class="text-center text-[10px] font-black text-slate-300 uppercase tracking-widest py-2">Sex</div>
+                        <div class="text-center text-[10px] font-black text-slate-300 uppercase tracking-widest py-2">Sáb</div>
                     </div>
                     <div id="month-grid" class="calendar-grid flex-1">
                         <!-- Renderizado via JS -->
@@ -240,54 +269,55 @@
     </div>
 
     <!-- PAINEL LATERAL (MODAL DO DIA) -->
-    <div id="daily-modal-backdrop" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[40] hidden backdrop-enter" onclick="window.closeDailyModal()"></div>
+    <!-- Fundo Escuro Blur -->
+    <div id="daily-modal-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[40] hidden backdrop-enter" onclick="window.closeDailyModal()"></div>
     
-    <!-- Correção Crítica do Modal: Usando flex-col, h-[100dvh] e limitando o corpo com min-h-0 -->
-    <div id="daily-modal" class="fixed top-0 right-0 h-[100dvh] w-full sm:w-[500px] md:w-[600px] bg-white shadow-float z-[50] hidden flex-col modal-enter border-l border-slate-100">
+    <!-- Modal fixo usando top-0 e bottom-0 em vez de dvh (Resolve o bug do footer mobile) -->
+    <div id="daily-modal" class="fixed top-0 bottom-0 right-0 w-full sm:w-[500px] md:w-[600px] bg-slate-100 shadow-2xl z-[50] hidden flex-col modal-enter border-l border-slate-300">
         
-        <!-- HEADER (FIXO) -->
-        <header class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-white shrink-0">
+        <!-- HEADER DO MODAL (Escuro Metálico) -->
+        <header class="bar-3d-dark px-6 py-5 flex justify-between items-center shrink-0">
             <div>
-                <h3 id="modal-date-title" class="text-2xl font-black text-slate-800 tracking-tight">Dia</h3>
-                <p id="modal-date-subtitle" class="text-sm text-slate-500 font-medium mt-0.5">Detalhes do planejamento</p>
+                <h3 id="modal-date-title" class="text-2xl font-black text-white tracking-widest drop-shadow-md">DIA</h3>
+                <p id="modal-date-subtitle" class="text-[11px] text-slate-400 font-bold uppercase tracking-wider mt-1">Detalhes do planejamento</p>
             </div>
-            <button onclick="window.closeDailyModal()" class="p-2.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            <button onclick="window.closeDailyModal()" class="p-2 btn-3d rounded-full text-slate-300 hover:text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
         </header>
 
-        <!-- BODY (ROláVEL) -->
-        <main class="flex-1 overflow-y-auto p-6 no-scrollbar min-h-0 bg-slate-50/50">
-            <section class="mb-10">
-                <div class="flex items-center mb-5">
-                    <span class="w-1.5 h-6 bg-primary rounded-full mr-3"></span>
-                    <h4 class="text-lg font-bold text-slate-800">Tarefas Principais</h4>
+        <!-- BODY DO MODAL (Fundo claro para legibilidade, min-h-0 vital para scroll interno) -->
+        <main class="flex-1 overflow-y-auto p-6 no-scrollbar min-h-0 bg-slate-200 shadow-inner">
+            <section class="mb-8">
+                <div class="flex items-center mb-4">
+                    <span class="w-2 h-6 bg-primary rounded shadow-sm mr-3"></span>
+                    <h4 class="text-sm font-black text-slate-700 uppercase tracking-widest">Tarefas Principais</h4>
                 </div>
                 <div id="modal-task-list" class="space-y-3"></div>
             </section>
             
-            <section class="mb-10">
-                <div class="flex items-center mb-5">
-                    <span class="w-1.5 h-6 bg-secondary rounded-full mr-3"></span>
-                    <h4 class="text-lg font-bold text-slate-800">Desdobramentos</h4>
+            <section class="mb-8">
+                <div class="flex items-center mb-4">
+                    <span class="w-2 h-6 bg-secondary rounded shadow-sm mr-3"></span>
+                    <h4 class="text-sm font-black text-slate-700 uppercase tracking-widest">Desdobramentos</h4>
                 </div>
-                <div id="modal-substep-list" class="space-y-5"></div>
+                <div id="modal-substep-list" class="space-y-4"></div>
             </section>
             
-            <section class="mb-4">
+            <section class="mb-2">
                 <div class="flex items-center mb-4">
-                    <span class="w-1.5 h-6 bg-warning rounded-full mr-3"></span>
-                    <h4 class="text-lg font-bold text-slate-800">Observações</h4>
+                    <span class="w-2 h-6 bg-warning rounded shadow-sm mr-3"></span>
+                    <h4 class="text-sm font-black text-slate-700 uppercase tracking-widest">Observações</h4>
                 </div>
-                <textarea id="modal-notes" rows="4" placeholder="Aprendizados, reuniões ou notas gerais..." class="w-full p-4 input-soft rounded-xl text-sm text-slate-700 resize-none transition-all"></textarea>
+                <textarea id="modal-notes" rows="4" placeholder="Aprendizados, reuniões ou notas gerais..." class="w-full p-4 input-soft rounded-xl text-sm text-slate-800 font-medium resize-none"></textarea>
             </section>
         </main>
 
-        <!-- FOOTER (FIXO) -->
-        <footer class="p-5 border-t border-slate-100 bg-white flex justify-end space-x-3 shrink-0">
-            <button onclick="window.closeDailyModal()" class="px-5 py-2.5 text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 font-medium transition-all">Cancelar</button>
-            <button onclick="window.saveDayData()" class="px-6 py-2.5 bg-primary text-white rounded-xl hover:bg-primary-dark hover:shadow-lg hover:shadow-indigo-200 font-medium transition-all flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+        <!-- FOOTER DO MODAL (Escuro Metálico) pb-safe garante margem em iPhones -->
+        <footer class="bar-3d-dark p-5 flex justify-end space-x-4 shrink-0 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+            <button onclick="window.closeDailyModal()" class="px-6 py-2.5 text-slate-300 bg-transparent border border-slate-500 rounded-lg hover:bg-slate-700/50 hover:text-white font-bold tracking-wide uppercase text-xs transition-all">Cancelar</button>
+            <button onclick="window.saveDayData()" class="px-6 py-2.5 btn-primary-3d rounded-lg font-bold tracking-wide uppercase text-xs flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
                 Salvar Alterações
             </button>
         </footer>
@@ -333,10 +363,10 @@
             const bgColor = type === 'error' ? 'bg-danger' : (type === 'success' ? 'bg-secondary' : 'bg-primary-dark');
             const icon = type === 'error' ? '⚠️' : (type === 'success' ? '✅' : '👋');
             
-            toast.className = `${bgColor} text-white px-5 py-4 rounded-xl shadow-float flex items-center transition-all duration-300 transform translate-y-full opacity-0 max-w-sm`;
+            toast.className = `${bgColor} text-white px-5 py-4 rounded-xl shadow-2xl flex items-center transition-all duration-300 transform translate-y-full opacity-0 pointer-events-auto border border-white/20`;
             toast.innerHTML = `
-                <span class="mr-3 text-lg">${icon}</span>
-                <span class="text-sm font-medium flex-1 leading-relaxed">${message}</span>
+                <span class="mr-3 text-xl drop-shadow-md">${icon}</span>
+                <span class="text-sm font-semibold flex-1 leading-relaxed tracking-wide">${message}</span>
                 <button onclick="this.parentElement.remove()" class="ml-4 hover:text-white/70 text-xl font-bold transition-colors">&times;</button>
             `;
             container.appendChild(toast);
@@ -393,9 +423,10 @@
                 currentUser = user;
                 const cloudInd = document.getElementById('cloud-indicator');
                 cloudInd.classList.remove('hidden');
-                cloudInd.classList.replace('bg-red-100/50', 'bg-green-100/50');
-                cloudInd.classList.replace('text-red-700', 'text-green-700');
-                cloudInd.innerHTML = '<span class="w-2 h-2 rounded-full bg-green-500 mr-3 animate-pulse shrink-0"></span><span class="text-xs font-semibold tracking-wide whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">Online</span>';
+                cloudInd.classList.replace('border-red-800', 'border-green-800');
+                cloudInd.classList.replace('bg-red-900/30', 'bg-green-900/30');
+                cloudInd.classList.replace('text-red-400', 'text-green-400');
+                cloudInd.innerHTML = '<span class="w-2 h-2 rounded-full bg-green-400 mr-3 animate-pulse shrink-0 shadow-[0_0_5px_#4ade80]"></span><span class="text-[11px] font-bold tracking-wider uppercase whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">Sincronizado</span>';
                 
                 document.getElementById('loading-overlay').classList.add('hidden');
                 fetchDataAndListen();
@@ -407,11 +438,8 @@
         async function initAuth() {
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    try {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } catch (customTokenError) {
-                        await signInAnonymously(auth);
-                    }
+                    try { await signInWithCustomToken(auth, __initial_auth_token); } 
+                    catch (customTokenError) { await signInAnonymously(auth); }
                 } else {
                     await signInAnonymously(auth);
                 }
@@ -420,14 +448,14 @@
                 
                 const cloudInd = document.getElementById('cloud-indicator');
                 cloudInd.classList.remove('hidden');
-                cloudInd.classList.replace('bg-green-100/50', 'bg-red-100/50');
-                cloudInd.classList.replace('text-green-700', 'text-red-700');
-                cloudInd.innerHTML = '<span class="w-2 h-2 rounded-full bg-red-500 mr-3 shrink-0"></span><span class="text-xs font-semibold tracking-wide whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">Offline</span>';
+                cloudInd.classList.replace('border-green-800', 'border-red-800');
+                cloudInd.classList.replace('bg-green-900/30', 'bg-red-900/30');
+                cloudInd.classList.replace('text-green-400', 'text-red-400');
+                cloudInd.innerHTML = '<span class="w-2 h-2 rounded-full bg-red-500 mr-3 shrink-0 shadow-[0_0_5px_#ef4444]"></span><span class="text-[11px] font-bold tracking-wider uppercase whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">Offline</span>';
 
                 if (error.code === 'auth/configuration-not-found' || error.code === 'auth/admin-restricted-operation') {
                     window.showNotification("Ative o 'Login Anônimo' no Firebase para habilitar a nuvem. Usando modo local.", "error");
                 }
-
                 loadLocalData();
                 renderCalendar();
             }
@@ -438,9 +466,7 @@
             const q = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'planner_days');
             
             onSnapshot(q, (snapshot) => {
-                snapshot.forEach(doc => {
-                    globalPlannerData[doc.id] = doc.data();
-                });
+                snapshot.forEach(doc => { globalPlannerData[doc.id] = doc.data(); });
                 renderCalendar();
             }, (error) => {});
         }
@@ -465,6 +491,7 @@
             return new Date(d.setDate(diff));
         }
 
+        // Alternância Clara de Abas (Completamente oculta a outra via display:none absoluto)
         window.switchTab = (tab) => {
             currentTab = tab;
             const btnWeek = document.getElementById('tab-week');
@@ -473,15 +500,25 @@
             const viewMonth = document.getElementById('view-month');
 
             if (tab === 'week') {
-                btnWeek.className = "px-5 py-2 rounded-lg text-sm font-semibold transition-all bg-white text-primary shadow-soft";
-                btnMonth.className = "px-5 py-2 rounded-lg text-sm font-semibold transition-all text-slate-500 hover:text-slate-800";
-                viewWeek.classList.remove('hidden');
-                viewMonth.classList.add('hidden');
+                btnWeek.className = "px-6 py-1.5 rounded-lg text-sm font-bold uppercase tracking-wider transition-all btn-3d text-white";
+                btnMonth.className = "px-6 py-1.5 rounded-lg text-sm font-bold uppercase tracking-wider transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-800/50";
+                
+                // Mostra Semana, Oculta Mês
+                viewWeek.classList.remove('view-hidden');
+                viewMonth.classList.add('view-hidden');
+                
+                // Força layout flex
+                viewWeek.style.display = '';
             } else {
-                btnMonth.className = "px-5 py-2 rounded-lg text-sm font-semibold transition-all bg-white text-primary shadow-soft";
-                btnWeek.className = "px-5 py-2 rounded-lg text-sm font-semibold transition-all text-slate-500 hover:text-slate-800";
-                viewMonth.classList.remove('hidden');
-                viewWeek.classList.add('hidden');
+                btnMonth.className = "px-6 py-1.5 rounded-lg text-sm font-bold uppercase tracking-wider transition-all btn-3d text-white";
+                btnWeek.className = "px-6 py-1.5 rounded-lg text-sm font-bold uppercase tracking-wider transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-800/50";
+                
+                // Mostra Mês, Oculta Semana
+                viewMonth.classList.remove('view-hidden');
+                viewWeek.classList.add('view-hidden');
+                
+                // Força layout flex
+                viewMonth.style.display = 'flex';
             }
             renderCalendar();
         };
@@ -525,9 +562,9 @@
             const monthStr = monthNamesList[startOfWeek.getMonth()];
             const monthEndStr = monthNamesList[endOfWeek.getMonth()];
             if (startOfWeek.getMonth() === endOfWeek.getMonth()) {
-                document.getElementById('period-label').innerText = `${monthStr} ${startOfWeek.getFullYear()}`;
+                document.getElementById('period-label').innerText = `${monthStr.toUpperCase()} ${startOfWeek.getFullYear()}`;
             } else {
-                document.getElementById('period-label').innerText = `${monthStr.substring(0,3)} - ${monthEndStr.substring(0,3)} ${endOfWeek.getFullYear()}`;
+                document.getElementById('period-label').innerText = `${monthStr.substring(0,3).toUpperCase()} - ${monthEndStr.substring(0,3).toUpperCase()} ${endOfWeek.getFullYear()}`;
             }
 
             const container = document.getElementById('view-week');
@@ -543,12 +580,12 @@
                 const metrics = getDayMetrics(dateKey);
                 
                 let columnHTML = `
-                    <div onclick="window.openDailyModal('${dateKey}')" class="flex flex-col bg-white rounded-2xl border ${isToday ? 'border-primary ring-2 ring-primary/20 shadow-lg' : 'border-slate-200 shadow-soft hover:-translate-y-1 hover:shadow-lg'} p-4 sm:p-5 transition-all duration-300 cursor-pointer min-h-[140px] sm:min-h-0 relative group">
-                        ${isToday ? '<div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-sm tracking-wider uppercase">Hoje</div>' : ''}
+                    <div onclick="window.openDailyModal('${dateKey}')" class="flex flex-col card-light-3d rounded-2xl ${isToday ? 'ring-2 ring-indigo-500' : ''} p-4 sm:p-5 transition-transform cursor-pointer min-h-[140px] sm:min-h-0 relative">
+                        ${isToday ? '<div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-[10px] font-black px-4 py-1 rounded shadow-md tracking-widest uppercase border border-indigo-400">HOJE</div>' : ''}
                         
                         <div class="flex justify-between items-center sm:block sm:text-center mb-4 mt-1">
-                            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">${dayNamesList[i].substring(0,3)}</span>
-                            <span class="text-3xl font-black ${isToday ? 'text-primary' : 'text-slate-700'} sm:block sm:mt-1">${currentDateLoop.getDate()}</span>
+                            <span class="text-xs font-black text-slate-400 uppercase tracking-widest">${dayNamesList[i].substring(0,3)}</span>
+                            <span class="text-3xl font-black ${isToday ? 'text-indigo-600' : 'text-slate-700'} sm:block sm:mt-1 drop-shadow-sm">${currentDateLoop.getDate()}</span>
                         </div>
                         <div class="flex-1 space-y-2">
                 `;
@@ -557,25 +594,25 @@
                     const progress = Math.round((metrics.completed / metrics.total) * 100);
                     const color = metrics.completed === metrics.total ? 'bg-secondary' : 'bg-primary';
                     columnHTML += `
-                        <div class="w-full bg-slate-100 rounded-full h-1.5 mb-3 overflow-hidden">
+                        <div class="w-full bg-slate-200 rounded-full h-2 mb-3 shadow-inner border border-slate-300 overflow-hidden">
                             <div class="${color} h-full rounded-full transition-all duration-500" style="width: ${progress}%"></div>
                         </div>
-                        <p class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider mb-2">${metrics.completed} de ${metrics.total} Tarefas</p>
+                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-2">${metrics.completed} DE ${metrics.total} Tarefas</p>
                     `;
                     
                     const tasks = globalPlannerData[dateKey].tasks.filter(t => t && t.description).slice(0, 3);
                     tasks.forEach(t => {
                         columnHTML += `
-                            <div class="text-xs truncate ${t.completed ? 'line-through text-slate-400' : 'text-slate-600 font-medium'} flex items-center">
-                                <span class="mr-1.5 ${t.completed ? 'text-secondary' : 'text-slate-300'}">${t.completed ? '✓' : '•'}</span> ${t.description}
+                            <div class="text-xs truncate ${t.completed ? 'line-through text-slate-400' : 'text-slate-700 font-semibold'} flex items-center">
+                                <span class="mr-2 ${t.completed ? 'text-secondary' : 'text-slate-300'} font-bold">${t.completed ? '✓' : '•'}</span> ${t.description}
                             </div>
                         `;
                     });
-                    if (metrics.total > 3) columnHTML += `<div class="text-[10px] text-slate-400 pl-3 pt-1 font-medium">+${metrics.total - 3} ocultas</div>`;
+                    if (metrics.total > 3) columnHTML += `<div class="text-[10px] text-slate-400 pl-4 pt-1 font-bold">+${metrics.total - 3} ocultas</div>`;
                 } else {
                     columnHTML += `
-                        <div class="h-full flex items-center justify-center text-slate-200 group-hover:text-primary-light transition-colors duration-300">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4" /></svg>
+                        <div class="h-full flex items-center justify-center text-slate-300">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4" /></svg>
                         </div>
                     `;
                 }
@@ -589,7 +626,7 @@
             const year = baseDate.getFullYear();
             const month = baseDate.getMonth();
             
-            document.getElementById('period-label').innerText = `${monthNamesList[month]} ${year}`;
+            document.getElementById('period-label').innerText = `${monthNamesList[month].toUpperCase()} ${year}`;
             
             const firstDayOfMonth = new Date(year, month, 1);
             const lastDayOfMonth = new Date(year, month + 1, 0);
@@ -613,9 +650,9 @@
                 const metrics = getDayMetrics(dateKey);
                 
                 let cellHTML = `
-                    <div onclick="window.openDailyModal('${dateKey}')" class="calendar-cell relative flex flex-col ${isToday ? 'bg-primary-light/30' : ''}">
+                    <div onclick="window.openDailyModal('${dateKey}')" class="calendar-cell relative flex flex-col ${isToday ? 'bg-indigo-50 border border-indigo-200' : ''}">
                         <div class="text-right">
-                            <span class="inline-flex items-center justify-center w-7 h-7 text-sm font-bold rounded-full ${isToday ? 'bg-primary text-white shadow-md shadow-indigo-200' : 'text-slate-600'}">
+                            <span class="inline-flex items-center justify-center w-7 h-7 text-sm font-black rounded ${isToday ? 'btn-primary-3d text-white' : 'text-slate-600'}">
                                 ${i}
                             </span>
                         </div>
@@ -623,9 +660,9 @@
                 `;
 
                 if (metrics) {
-                    if (metrics.completed === metrics.total) cellHTML += `<span class="w-2.5 h-2.5 rounded-full bg-secondary shadow-sm shadow-emerald-200" title="Completo"></span>`;
-                    else if (metrics.completed > 0) cellHTML += `<span class="w-2.5 h-2.5 rounded-full bg-primary shadow-sm shadow-indigo-200" title="Em progresso"></span>`;
-                    else cellHTML += `<span class="w-2.5 h-2.5 rounded-full bg-danger shadow-sm shadow-rose-200" title="Pendente"></span>`;
+                    if (metrics.completed === metrics.total) cellHTML += `<span class="w-3 h-3 rounded-sm bg-secondary shadow-sm border border-emerald-600" title="Completo"></span>`;
+                    else if (metrics.completed > 0) cellHTML += `<span class="w-3 h-3 rounded-sm bg-primary shadow-sm border border-indigo-600" title="Em progresso"></span>`;
+                    else cellHTML += `<span class="w-3 h-3 rounded-sm bg-danger shadow-sm border border-rose-600" title="Pendente"></span>`;
                 }
 
                 cellHTML += `</div></div>`;
@@ -660,7 +697,7 @@
             }
 
             const dateObj = parseDateKey(dateKey);
-            document.getElementById('modal-date-title').innerText = `${dateObj.getDate()} de ${monthNamesList[dateObj.getMonth()]}`;
+            document.getElementById('modal-date-title').innerText = `${dateObj.getDate()} DE ${monthNamesList[dateObj.getMonth()].toUpperCase()}`;
             document.getElementById('modal-date-subtitle').innerText = `${dayNamesList[dateObj.getDay()]} - ${dateObj.getFullYear()}`;
 
             renderModalContent();
@@ -699,20 +736,20 @@
 
             activeDailyData.tasks.forEach((task, index) => {
                 tList.insertAdjacentHTML('beforeend', `
-                    <div class="flex items-center space-x-2 sm:space-x-3 bg-white border border-slate-200 p-2.5 rounded-xl shadow-sm hover:shadow-md transition-shadow">
-                        <input type="checkbox" onchange="updateTempData('completed', ${index}, this.checked)" ${task.completed ? 'checked' : ''} class="w-5 h-5 checkbox-modern shrink-0">
-                        <input type="text" oninput="updateTempData('description', ${index}, this.value)" value="${task.description}" placeholder="Descreva a tarefa..." class="flex-1 input-soft py-1.5 px-3 rounded-lg text-sm ${task.completed ? 'line-through text-slate-400 bg-slate-50 border-transparent' : 'text-slate-800'} min-w-0 font-medium">
+                    <div class="flex items-center space-x-2 sm:space-x-3 card-light-3d p-2.5 rounded-lg">
+                        <input type="checkbox" onchange="updateTempData('completed', ${index}, this.checked)" ${task.completed ? 'checked' : ''} class="w-5 h-5 checkbox-modern shrink-0 cursor-pointer">
+                        <input type="text" oninput="updateTempData('description', ${index}, this.value)" value="${task.description}" placeholder="Descreva a tarefa..." class="flex-1 input-soft py-1.5 px-3 rounded text-sm font-semibold ${task.completed ? 'line-through text-slate-400 bg-transparent border-transparent shadow-none' : 'text-slate-800'} min-w-0">
                         
-                        <div class="relative shrink-0 flex items-center bg-slate-100 rounded-lg p-1">
-                             <select onchange="updateTempData('priority', ${index}, this.value)" class="text-xs font-semibold border-none bg-transparent rounded px-2 py-1 outline-none cursor-pointer text-slate-600 appearance-none text-center">
+                        <div class="relative shrink-0 flex items-center bg-slate-200 rounded p-1 shadow-inner border border-slate-300">
+                             <select onchange="updateTempData('priority', ${index}, this.value)" class="text-[11px] font-black uppercase tracking-wider border-none bg-transparent rounded px-1 py-1 outline-none cursor-pointer text-slate-700 appearance-none text-center">
                                 <option value="high" ${task.priority==='high'?'selected':''}>Alta</option>
                                 <option value="medium" ${task.priority==='medium'?'selected':''}>Média</option>
                                 <option value="low" ${task.priority==='low'?'selected':''}>Baixa</option>
                             </select>
                         </div>
 
-                        <button onclick="window.exportToICS(${index})" class="p-2 text-primary bg-primary-light/50 hover:bg-primary hover:text-white rounded-lg transition-colors shrink-0" title="Adicionar ao Calendário (.ics)">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        <button onclick="window.exportToICS(${index})" class="p-2 btn-3d rounded transition-colors shrink-0" title="Adicionar ao Calendário (.ics)">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                         </button>
                     </div>
                 `);
@@ -720,15 +757,15 @@
                 if (task.description.trim() !== '') {
                     if(!task.substeps) task.substeps = ['','','',''];
                     sList.insertAdjacentHTML('beforeend', `
-                        <div class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative overflow-hidden group/card">
-                            <div class="absolute top-0 left-0 w-1 h-full bg-slate-200 group-hover/card:bg-primary transition-colors"></div>
-                            <p class="text-xs font-bold text-primary mb-3 pl-2">Desdobrando: ${task.description}</p>
+                        <div class="card-light-3d p-4 rounded-lg relative overflow-hidden group/card">
+                            <div class="absolute top-0 left-0 w-1.5 h-full bg-slate-300 group-hover/card:bg-indigo-500 transition-colors"></div>
+                            <p class="text-[10px] font-black text-indigo-600 mb-3 pl-2 uppercase tracking-widest">DESDOBRANDO: <span class="text-slate-600">${task.description}</span></p>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pl-2">
-                                <input type="text" oninput="updateTempSub(${index}, 0, this.value)" value="${task.substeps[0]||''}" placeholder="Passo A" class="w-full text-sm p-2.5 input-soft rounded-lg">
-                                <input type="text" oninput="updateTempSub(${index}, 1, this.value)" value="${task.substeps[1]||''}" placeholder="Passo B" class="w-full text-sm p-2.5 input-soft rounded-lg">
-                                <input type="text" oninput="updateTempSub(${index}, 2, this.value)" value="${task.substeps[2]||''}" placeholder="Passo C" class="w-full text-sm p-2.5 input-soft rounded-lg">
+                                <input type="text" oninput="updateTempSub(${index}, 0, this.value)" value="${task.substeps[0]||''}" placeholder="Passo A" class="w-full text-sm font-semibold p-2.5 input-soft rounded">
+                                <input type="text" oninput="updateTempSub(${index}, 1, this.value)" value="${task.substeps[1]||''}" placeholder="Passo B" class="w-full text-sm font-semibold p-2.5 input-soft rounded">
+                                <input type="text" oninput="updateTempSub(${index}, 2, this.value)" value="${task.substeps[2]||''}" placeholder="Passo C" class="w-full text-sm font-semibold p-2.5 input-soft rounded">
                                 <div class="relative w-full">
-                                    <input type="date" onchange="updateTempSub(${index}, 3, this.value)" value="${task.substeps[3]||''}" class="w-full text-sm p-2.5 input-soft rounded-lg text-slate-600 appearance-none bg-slate-100">
+                                    <input type="date" onchange="updateTempSub(${index}, 3, this.value)" value="${task.substeps[3]||''}" class="w-full text-sm font-bold p-2.5 input-soft rounded text-slate-700 appearance-none">
                                 </div>
                             </div>
                         </div>
@@ -754,15 +791,15 @@
                         if (t.description.trim() !== '') {
                             if(!t.substeps) t.substeps = ['','','',''];
                             sList.insertAdjacentHTML('beforeend', `
-                                <div class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative overflow-hidden group/card">
-                                    <div class="absolute top-0 left-0 w-1 h-full bg-slate-200 group-hover/card:bg-primary transition-colors"></div>
-                                    <p class="text-xs font-bold text-primary mb-3 pl-2">Desdobrando: ${t.description}</p>
+                                <div class="card-light-3d p-4 rounded-lg relative overflow-hidden group/card">
+                                    <div class="absolute top-0 left-0 w-1.5 h-full bg-slate-300 group-hover/card:bg-indigo-500 transition-colors"></div>
+                                    <p class="text-[10px] font-black text-indigo-600 mb-3 pl-2 uppercase tracking-widest">DESDOBRANDO: <span class="text-slate-600">${t.description}</span></p>
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pl-2">
-                                        <input type="text" oninput="updateTempSub(${i}, 0, this.value)" value="${t.substeps[0]||''}" placeholder="Passo A" class="w-full text-sm p-2.5 input-soft rounded-lg">
-                                        <input type="text" oninput="updateTempSub(${i}, 1, this.value)" value="${t.substeps[1]||''}" placeholder="Passo B" class="w-full text-sm p-2.5 input-soft rounded-lg">
-                                        <input type="text" oninput="updateTempSub(${i}, 2, this.value)" value="${t.substeps[2]||''}" placeholder="Passo C" class="w-full text-sm p-2.5 input-soft rounded-lg">
+                                        <input type="text" oninput="updateTempSub(${i}, 0, this.value)" value="${t.substeps[0]||''}" placeholder="Passo A" class="w-full text-sm font-semibold p-2.5 input-soft rounded">
+                                        <input type="text" oninput="updateTempSub(${i}, 1, this.value)" value="${t.substeps[1]||''}" placeholder="Passo B" class="w-full text-sm font-semibold p-2.5 input-soft rounded">
+                                        <input type="text" oninput="updateTempSub(${i}, 2, this.value)" value="${t.substeps[2]||''}" placeholder="Passo C" class="w-full text-sm font-semibold p-2.5 input-soft rounded">
                                         <div class="relative w-full">
-                                            <input type="date" onchange="updateTempSub(${i}, 3, this.value)" value="${t.substeps[3]||''}" class="w-full text-sm p-2.5 input-soft rounded-lg text-slate-600 appearance-none bg-slate-100">
+                                            <input type="date" onchange="updateTempSub(${i}, 3, this.value)" value="${t.substeps[3]||''}" class="w-full text-sm font-bold p-2.5 input-soft rounded text-slate-700 appearance-none">
                                         </div>
                                     </div>
                                 </div>
@@ -846,9 +883,9 @@
         window.saveDayData = async () => {
             if (!selectedDateKey || !activeDailyData) return;
             
-            const btn = document.querySelector('#daily-modal footer button.bg-primary');
+            const btn = document.querySelector('#daily-modal footer button.btn-primary-3d');
             const originalText = btn.innerHTML;
-            btn.innerHTML = '<svg class="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Salvando...';
+            btn.innerHTML = '<svg class="animate-spin h-4 w-4 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Salvando...';
 
             try {
                 globalPlannerData[selectedDateKey] = JSON.parse(JSON.stringify(activeDailyData));
