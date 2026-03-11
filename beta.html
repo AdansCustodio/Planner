@@ -42,8 +42,28 @@
             background-attachment: fixed;
         }
         
+        /* Ocultar scrollbar mantendo o scroll (Mantido apenas para pequenos elementos, se necessário) */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* NOVA BARRA DE ROLAGEM CUSTOMIZADA (METÁLICA) */
+        .custom-scroll::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #cbd5e1; /* Fundo do trilho metálico claro */
+            border-radius: 4px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.15);
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #64748b; /* "Puxador" mais escuro */
+            border-radius: 4px;
+            border: 1px solid #94a3b8; /* Borda para dar volume 3D */
+        }
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #475569; /* Fica mais escuro ao passar o mouse */
+        }
 
         /* BARRAS METÁLICAS ESCURAS 3D */
         .bar-3d-dark {
@@ -242,7 +262,7 @@
         </header>
 
         <!-- CONTEÚDO DO CALENDÁRIO -->
-        <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 no-scrollbar relative">
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scroll relative">
             <div class="max-w-7xl mx-auto h-full">
                 <!-- View Semanal (Utiliza ID para CSS toggle) -->
                 <div id="view-week" class="h-full flex flex-col sm:grid sm:grid-cols-7 gap-4 lg:gap-5 transition-opacity duration-300">
@@ -287,7 +307,7 @@
         </header>
 
         <!-- BODY DO MODAL (Fundo claro para legibilidade, min-h-0 vital para scroll interno) -->
-        <main class="flex-1 overflow-y-auto p-6 no-scrollbar min-h-0 bg-slate-200 shadow-inner">
+        <main class="flex-1 overflow-y-auto p-6 custom-scroll min-h-0 bg-slate-200 shadow-inner">
             <section class="mb-8">
                 <div class="flex items-center mb-4">
                     <span class="w-2 h-6 bg-primary rounded shadow-sm mr-3"></span>
@@ -748,6 +768,10 @@
                             </select>
                         </div>
 
+                        <button id="btn-ai-${index}" onclick="window.autoBreakdownTask(${index})" class="p-2 btn-3d rounded transition-colors shrink-0 hover:bg-slate-700 text-yellow-400" title="Desdobrar com IA ✨">
+                            ✨
+                        </button>
+
                         <button onclick="window.exportToICS(${index})" class="p-2 btn-3d rounded transition-colors shrink-0" title="Adicionar ao Calendário (.ics)">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                         </button>
@@ -941,6 +965,82 @@
                 }
             }
         }
+
+        // --- GEMINI API INTEGRATION ---
+        const geminiApiKey = ""; // A chave é injetada automaticamente no ambiente
+
+        async function generateSubstepsWithAI(taskDescription) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${geminiApiKey}`;
+            
+            const payload = {
+                contents: [{ parts: [{ text: `Quebre a seguinte tarefa em 3 passos práticos, curtos e acionáveis: "${taskDescription}"` }] }],
+                systemInstruction: { parts: [{ text: "Você é um assistente de produtividade sênior. Sua função é pegar uma tarefa macro e dividi-la em exatos 3 passos lógicos e muito curtos (max 8 palavras cada)." }] },
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            passoA: { type: "STRING", description: "O primeiro passo a ser tomado." },
+                            passoB: { type: "STRING", description: "O segundo passo a ser tomado." },
+                            passoC: { type: "STRING", description: "O terceiro passo a ser tomado." }
+                        },
+                        required: ["passoA", "passoB", "passoC"]
+                    }
+                }
+            };
+
+            const delays = [1000, 2000, 4000, 8000, 16000];
+            for (let i = 0; i < 6; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const data = await response.json();
+                    const textResult = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if(textResult) return JSON.parse(textResult);
+                    throw new Error("Resposta inválida da IA");
+                } catch (error) {
+                    if (i === 5) throw error;
+                    await new Promise(resolve => setTimeout(resolve, delays[i]));
+                }
+            }
+        }
+
+        window.autoBreakdownTask = async (taskIndex) => {
+            if(!activeDailyData || !activeDailyData.tasks[taskIndex]) return;
+            const task = activeDailyData.tasks[taskIndex];
+            
+            if(!task.description || task.description.trim() === '') {
+                window.showNotification("Por favor, digite a descrição da tarefa primeiro para usar a Inteligência Artificial.", "warning");
+                return;
+            }
+
+            // Altera o botão para mostrar que está carregando
+            const btnId = `btn-ai-${taskIndex}`;
+            const btn = document.getElementById(btnId);
+            if(btn) btn.innerHTML = '<svg class="animate-spin h-4 w-4 text-yellow-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+
+            try {
+                const steps = await generateSubstepsWithAI(task.description);
+                if (!task.substeps) task.substeps = ['', '', '', ''];
+                
+                // Atualiza os passos com a resposta JSON estruturada da IA
+                task.substeps[0] = steps.passoA || '';
+                task.substeps[1] = steps.passoB || '';
+                task.substeps[2] = steps.passoC || '';
+                
+                window.showNotification("✨ Desdobramento mágico concluído!", "success");
+                renderModalContent(); // Atualiza a interface
+            } catch (e) {
+                console.error("Gemini AI Error:", e);
+                window.showNotification("Ocorreu um erro ao chamar a IA. Tente novamente.", "error");
+                if(btn) btn.innerHTML = '✨'; // Retorna o ícone original em caso de erro
+            }
+        };
     </script>
 </body>
 </html>
